@@ -1,0 +1,12 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - npm install -g typescript
+  build:
+    commands:
+      - tsc index.ts
+artifacts:
+  files:
+    - index.js
