@@ -1,4 +1,6 @@
 ## https://developers.google.com/search/docs/advanced/robots/create-robots-txt
+## https://www.sitemaps.org/protocol.html
+
 User-agent: *
 Disallow: /assets/
 Allow: /
