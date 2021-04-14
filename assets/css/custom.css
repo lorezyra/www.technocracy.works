@@ -46,6 +46,21 @@ body {
   font-size: 1.92rem;
 }
 
+.methods-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pay-method{
+  margin: 2em;
+  padding: 1em;
+  text-align: center;
+  box-shadow: .2em .2em 1em .3em rgb(177, 172, 172);
+}
+
+
 .fa-circle-border {
       display: inline-block;
       border-radius: 60px;
