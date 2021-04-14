@@ -1375,3 +1375,22 @@ blockquote {
     padding-bottom: 100px;
 }
 }
+.share-section-button {
+    background: #000 !important;
+    border-color: #000 !important;
+    color: #fff !important;
+    border-radius: 30px;
+}
+.share-section-button:hover {
+    background: #fff !important;
+    border-color: #000 !important;
+    color: #000 !important;
+}
+.mbr-share-section-btn {
+    margin-top: 24px;
+}
+@media (min-width: 992px) {
+.mbr-share-section-btn {
+    display: none;
+} 
+}
