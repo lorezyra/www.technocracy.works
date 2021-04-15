@@ -2,35 +2,49 @@
 // https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#CannedACL
 // https://forums.aws.amazon.com/thread.jspa?messageID=689041&#689041
 // https://www.npmjs.com/package/aws-sdk
+// https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/migrating-to-v3.html
+// https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html
+// https://stackoverflow.com/questions/14375895/aws-s3-node-js-sdk-uploaded-file-and-folder-permissions
+
 
 console.log('Loading function');
-
-const aws = require('aws-sdk');
-
-const s3 = new aws.S3({ apiVersion: '2006-03-01' });
-
-
+// const aws = require('aws-sdk');
 
 // Import required AWS SDK clients and commands for Node.js
 const {
     S3Client,
-    PutObjectCommand,
-    CreateBucketCommand
- } = require("@aws-sdk/client-s3");
+    getObject,
+    getObjectAcl,
+    getBucketAcl,
+    getBucketPolicy,
+    listObjectsV2,
+    putBucketAcl,
+    putObject,
+    putObjectAcl
+} = require("@aws-sdk/client-s3");
 
- // Set the AWS region
+// Set the AWS region
 const REGION = "ap-northeast-1";
 
 // Set the bucket parameters
 const bucketName = "technocracy.works";
-const bucketParams = { Bucket: bucketName };
+const bucketParams = {
+    Bucket: bucketName
+};
+
+const s3 = new S3Client({
+    apiVersion: '2006-03-01',
+    region: 'ap-northeast-1',
+    maxRetries: 2
+});
+
 
 // Create name for uploaded object key
 // const keyName = "hello_world.txt";
 // const objectParams = { Bucket: bucketName, Key: keyName, Body: "Hello World!" };
 
 // Create an S3 client service object
-const s3 = new S3Client({ region: REGION });
+// const s3 = new S3Client({ region: REGION });
 
 
 exports.handler = async (event, context) => {
@@ -44,7 +58,9 @@ exports.handler = async (event, context) => {
         Key: key,
     };
     try {
-        const { ContentType } = await s3.getObject(params).promise();
+        const {
+            ContentType
+        } = await s3.getObject(params).promise();
         console.log('CONTENT TYPE:', ContentType);
         return ContentType;
     } catch (err) {
@@ -58,9 +74,10 @@ exports.handler = async (event, context) => {
 
 
 // s3.putObject({
-//     Bucket: bucket,
+//     Bucket: bucket + path,
 //     Key: key,
 //     ContentType: res.headers['content-type'],
+//     ContentEncoding: 'base64',
 //     ContentLength: res.headers['content-length'],
 //     ACL: 'public-read', //<<< this is the key
 //     Body: body
