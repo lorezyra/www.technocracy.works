@@ -1,0 +1,29 @@
+{
+    "Version": "2012-10-17",
+    "Id": "PolicyForCloudFrontPrivateContent",
+    "Statement": [{
+            "Sid": "1",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity E2FFJFL1MJ6ZTJ"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::technocracy.works/*"
+        },
+        {
+            "Sid": "2",
+            "Action": [
+                "s3:Get*",
+                "s3:List*",
+                "s3:Put*",
+                "s3:Replicate*",
+                "s3:Update*"
+            ],
+            "Effect": "Allow",
+            "Resource": "arn:aws:s3:::technocracy.works/*",
+            "Principal": {
+                "AWS": "arn:aws:lambda:ap-northeast-1:929020317704:function:www_Technocracy_Works__makePublicS3"
+            }
+        }
+    ]
+}
