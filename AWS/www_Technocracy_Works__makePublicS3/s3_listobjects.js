@@ -21,7 +21,7 @@
 console.log('Loading function');
 
 // Load the AWS SDK for Node.js
-const aws = require('aws-sdk');
+const aws = require('../../node_module/aws-sdk');
 // const async = require('async'); // To call AWS operations asynchronously.
 const REGION = "ap-northeast-1";
 const bucketName = "technocracy.works";

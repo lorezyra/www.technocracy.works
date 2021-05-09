@@ -12,6 +12,13 @@
         },
         {
             "Sid": "2",
+            "Effect": "Allow",
+            "Principal": "*", /* {
+                // "AWS": [
+                //     // "arn:aws:lambda:ap-northeast-1:929020317704:function:www_Technocracy_Works__makePublicS3"
+                // ],
+                // "Service" : "lambda.amazonaws.com"
+            //}, */
             "Action": [
                 "s3:Get*",
                 "s3:List*",
@@ -19,11 +26,10 @@
                 "s3:Replicate*",
                 "s3:Update*"
             ],
-            "Effect": "Allow",
-            "Resource": "arn:aws:s3:::technocracy.works/*",
-            "Principal": {
-                "AWS": "arn:aws:lambda:ap-northeast-1:929020317704:function:www_Technocracy_Works__makePublicS3"
-            }
+            "Resource": [
+                "arn:aws:s3:::technocracy.works",
+                "arn:aws:s3:::technocracy.works/*"
+            ]
         }
     ]
 }
