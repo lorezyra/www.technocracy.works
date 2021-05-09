@@ -20,24 +20,12 @@ exports.handler = async event => {
     const s3BucketToCloudFrontDistributionId = {
         "S3 Bucket": "CloudFront Distribution ID",
     };
-    const distributionId = s3BucketToCloudFrontDistributionId[getS3BucketFromEvent(event)];
+    // const distributionId = s3BucketToCloudFrontDistributionId[getS3BucketFromEvent(event)];
     const params = {
-        DistributionId: distributionId,
+        DistributionId:'E3UQOMJO4R85Y9',
         InvalidationBatch: {
             CallerReference: new Date().getTime().toString(),
             Paths: paths
-        // Paths: {
-        //     Quantity: '1',
-        //     Items: [
-        //         '*.html',
-        //         '*.js',
-        //         '*.css',
-        //         '*.jpg',
-        //         '*.gif',
-        //         '*.png',
-        //         '*.svg'
-        //     ]
-        // }
         }
     };
 
@@ -51,7 +39,7 @@ exports.handler = async event => {
             }
         })
         .promise();
-    console.log("invalidate: " + paths.Items[0]);
+    _log("invalidate", paths.Items[0]);
 };
 
 function getPathsFromEvent(event) {
@@ -59,6 +47,18 @@ function getPathsFromEvent(event) {
     return {
         Quantity: 1,
         Items: ["/" + event.Records[0].s3.object.key]
+        // Paths: {
+        //     Quantity: '1',
+        //     Items: [
+        //         '*.html',
+        //         '*.js',
+        //         '*.css',
+        //         '*.jpg',
+        //         '*.gif',
+        //         '*.png',
+        //         '*.svg'
+        //     ]
+        // }
     };
 }
 
