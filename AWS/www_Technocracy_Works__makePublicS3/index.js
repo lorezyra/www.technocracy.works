@@ -6,112 +6,237 @@
 // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html
 // https://stackoverflow.com/questions/14375895/aws-s3-node-js-sdk-uploaded-file-and-folder-permissions
 
+const aws = require('aws-sdk');
 
-console.log('Loading function');
-// const aws = require('aws-sdk');
-
-// Import required AWS SDK clients and commands for Node.js
-const {
-    S3Client,
-    getObject,
-    getObjectAcl,
-    getBucketAcl,
-    getBucketPolicy,
-    listObjectsV2,
-    putBucketAcl,
-    putObject,
-    putObjectAcl
-} = require("@aws-sdk/client-s3");
-
-// Set the AWS region
 const REGION = "ap-northeast-1";
-
-// Set the bucket parameters
-const bucketName = "technocracy.works";
 const bucketParams = {
-    Bucket: bucketName
+    Bucket: 'technocracy.works',
+    /* required */
+    //   ContinuationToken: 'STRING_VALUE',
+    Delimiter: '/',
+    //   EncodingType: url,
+    //   ExpectedBucketOwner: 'STRING_VALUE',
+    FetchOwner: true,
+    MaxKeys: '1000',
+    //   Prefix: 'STRING_VALUE',
+    //   RequestPayer: requester,
+    //   StartAfter: 'STRING_VALUE'
 };
 
-const s3 = new S3Client({
+const s3 = new aws.S3({
     apiVersion: '2006-03-01',
-    region: 'ap-northeast-1',
+    region: REGION,
     maxRetries: 2
 });
 
 
-// Create name for uploaded object key
-// const keyName = "hello_world.txt";
-// const objectParams = { Bucket: bucketName, Key: keyName, Body: "Hello World!" };
-
-// Create an S3 client service object
-// const s3 = new S3Client({ region: REGION });
-
-
-exports.handler = async (event, context) => {
-    console.log('Received event:', JSON.stringify(event, null, 2));
+exports.handler = async(event, context) => {
+    console.log('exports.handler()');
+    // console.log('Received event:', JSON.stringify(event, null, 2));
 
     // Get the object from the event and show its content type
-    const bucket = event.Records[0].s3.bucket.name;
-    const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
-    const params = {
-        Bucket: bucket,
-        Key: key,
+    // const bucket = event.Records[0].s3.bucket.name;
+    // const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
+    
+    var params = {
+        Bucket: bucketParams.Bucket,
+        Key: "robots.txt"
     };
+    // console.log("params", params);
+    
+    
     try {
-        const {
-            ContentType
-        } = await s3.getObject(params).promise();
+        var { ContentType } = await s3.getObject(params).promise();
         console.log('CONTENT TYPE:', ContentType);
-        return ContentType;
-    } catch (err) {
+
+        listFiles(bucketParams);
+        // console.log("bucketParams", bucketParams);
+        s3.listObjectsV2(bucketParams, function(err, data) {
+            if (err) {
+                console.log("exports Error ", err);
+            }
+            else {
+                console.log("s3.listObjectsV2() data", data.Contents);
+                console.log("params", params);
+                s3.getObject(params, function(err, data) {
+                    if (err) {
+                        console.log("s3.getObject() ERROR ", err, err.stack); // an error occurred
+                    }
+                    else {
+                        /*
+                        data = {
+                         AcceptRanges: "bytes", 
+                         ContentLength: 3191, 
+                         ContentType: "image/jpeg", 
+                         ETag: "\"6805f2cfc46c0f04559748bb039d69ae\"", 
+                         LastModified: <Date Representation>, 
+                         Metadata: {}, 
+                         TagCount: 2, 
+                         VersionId: "null"
+                        }
+                        */
+                        console.log("s3.getObject() data: ", data); // successful response
+                        return data;
+
+                    }
+                });
+
+            }
+        });
+        // listFiles(bucketParams);
+
+        // return ContentType; //{"Status": 200}
+        return {"Status": 200};
+
+    }
+    catch (err) {
         console.log(err);
-        const message = `Error getting object ${key} from bucket ${bucket}. Make sure they exist and your bucket is in the same region as this function.`;
+        let message = `Error getting object ${params.key} from bucket ${bucketParams.Bucket}. Check: object(s) exist; bucket = same region as this function.`;
         console.log(message);
-        throw new Error(message);
+        // throw new Error(message);
     }
 };
 
 
 
-// s3.putObject({
-//     Bucket: bucket + path,
-//     Key: key,
-//     ContentType: res.headers['content-type'],
-//     ContentEncoding: 'base64',
-//     ContentLength: res.headers['content-length'],
-//     ACL: 'public-read', //<<< this is the key
-//     Body: body
-// })
+var listFiles = function(bucketParams) {
+    console.log("function listFiles (", bucketParams, ")");
+
+    // Call S3 to obtain a list of the objects in the bucket
+    try {
+        s3.listObjectsV2(bucketParams, function(err, data) {
+            if (err) {
+                console.log("listFiles() Error", err);
+            }
+            else {
+                console.log("s3.listObjectsV2() data", data);
+                // data = {
+                //     Contents: [{
+                //             ETag: "\"70ee1738b6b21e2c8a43f3a5ab0eee71\"",
+                //             Key: "happyface.jpg",
+                //             LastModified: < Date Representation > ,
+                //             Size: 11,
+                //             StorageClass: "STANDARD"
+                //         },
+                //         {
+                //             ETag: "\"becf17f89c30367a9a44495d62ed521a-1\"",
+                //             Key: "test.jpg",
+                //             LastModified: < Date Representation > ,
+                //             Size: 4192256,
+                //             StorageClass: "STANDARD"
+                //         }
+                //     ],
+                //     IsTruncated: true,
+                //     KeyCount: 2,
+                //     MaxKeys: 2,
+                //     Name: "examplebucket",
+                //     NextContinuationToken: "1w41l63U0xa8q7smH50vCxyTQqdxo69O3EmK28Bi5PcROI4wI/EyIJg==",
+                //     Prefix: ""
+                // }
 
 
-// var AWS = require("aws-sdk")
-// AWS.config.credentials = myCredentials
-// var s3 = new AWS.S3()
+                // console.log("Success", data);
+                var keyCnt = data.KeyCount;
 
-// var params = {
-//   Bucket: myBucket,
-//   Delete: { Objects: ['/invoices/2015/11/02/700CBB21-079A-4633-B305222EBB3E5E9F.pdf'] }
-// }
+                console.log("keyCnt=", keyCnt);
 
-// s3.deleteObjects(params, function(err, data) {
-//   console.log(err)
-//   console.log(data)  // output here seems as my Key has been deleted.
-// })
+                // var objParams = {
+                //     Bucket: data.Name,
+                //     Key: data.Contents[x].Key
+                // };
+
+                console.log("bucket=", data.Name);
+
+                data.Contents.map(getFileAcl, this); //loop through Contents
+
+            }
+        });
+
+        return;
+    }
+    catch (err) {
+        console.log(err);
+    }
+};
 
 
-// const run = async () => {
-//   // Create S3 bucket
-//   try {
-//     const data = await s3.send(new CreateBucketCommand(bucketParams));
-//     console.log("Success. Bucket created.");
-//   } catch (err) {
-//     console.log("Error", err);
-//   }
-//   try {
-//     const results = await s3.send(new PutObjectCommand(objectParams));
-//     console.log("Successfully uploaded data to " + bucketName + "/" + keyName);
-//   } catch (err) {
-//     console.log("Error", err);
-//   }
-// };
-// run();
+
+var getFileAcl = function(objectKey) {
+
+    try {
+        console.log("function getFileAcl (", objectKey, ")");
+        // const { fileObjACL } = await s3.getObjectAcl(objectKey).promise();
+        // console.log('File ACL:', fileObjACL);
+
+        // s3.getObjectAcl(objParams, function (err, data) {
+        //     if (err) {
+        //         console.log("Error", err);
+        //     }
+        //     else {
+        //         console.log("Success", data);
+        /*
+                data = {
+                         Grants: [
+                            {
+                           Grantee: {
+                            DisplayName: "owner-display-name", 
+                            ID: "examplee7a2f25102679df27bb0ae12b3f85be6f290b936c4393484be31bebcc", 
+                            Type: "CanonicalUser"
+                           }, 
+                           Permission: "WRITE"
+                          }, 
+                            {
+                           Grantee: {
+                            DisplayName: "owner-display-name", 
+                            ID: "examplee7a2f25102679df27bb0ae12b3f85be6f290b936c4393484be31bebcc", 
+                            Type: "CanonicalUser"
+                           }, 
+                           Permission: "WRITE_ACP"
+                          }, 
+                            {
+                           Grantee: {
+                            DisplayName: "owner-display-name", 
+                            ID: "examplee7a2f25102679df27bb0ae12b3f85be6f290b936c4393484be31bebcc", 
+                            Type: "CanonicalUser"
+                           }, 
+                           Permission: "READ"
+                          }, 
+                            {
+                           Grantee: {
+                            DisplayName: "owner-display-name", 
+                            ID: "852b113eexamplee7a2f25102679df27bb0ae12b3f85be6f290b936c4393484be31bebcc7a2f25102679df27bb0ae12b3f85be6f290b936c4393484be31bebcc", 
+                            Type: "CanonicalUser"
+                           }, 
+                           Permission: "READ_ACP"
+                          }
+                         ], 
+                         Owner: {
+                          DisplayName: "owner-display-name", 
+                          ID: "examplee7a2f25102679df27bb0ae12b3f85be6f290b936c4393484be31bebcc"
+                         }
+                        }
+        */
+        //     }}
+        // );
+
+
+        return;
+    }
+    catch (err) {
+        console.log("getFileAcl() ERROR ", err);
+    }
+};
+
+
+var testFunc = function(obj) {
+    console.log("function testFunc (", obj, ")");
+
+    try {
+
+
+        if (obj) return;
+    }
+    catch (err) {
+        console.log("testFunc() ERROR ", err);
+    }
+};
